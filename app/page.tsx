@@ -1,21 +1,36 @@
 "use client";
 
-import { useState } from "react"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { postRequest } from "@/src/axios/requests";
+import Cache from "../src/utils/cache"
 
-export const Home = () => {
+
+export default function Login() {
   const [email, setEmail] = useState<string>("");
-  const [ loginValue, SetLoginValue] = useState<{email: string}>()
+  const router = useRouter();
 
-  const onLogin = (e: {preventDefault: () => void}) => {
-
-      e.preventDefault();
-      const submission = {email};
-      SetLoginValue(submission);
-  
-  }
+  const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();    
+    try {
+      // Call the backend API endpoint to request the token
+      const response = await postRequest("/token", {email})
+      Cache.set('token', response.data.token)
+      router.push("/questions");
+      // console.log(token); // Handle the response as needed
+      // Redirect or perform further actions
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(error.message); // Handle the error message
+      } else {
+        console.error('An unexpected error occurred');
+      }
+    }
+  };
 
   return (
-    <main className="bg-[#b9b3a9] flex align-center justify-center h-dvh">
+    <main className="flex align-center justify-center h-dvh">
       <div className="w-[450px] p-5 mt-20 h-fit bg-white rounded-[20px] shadow">
         <h1 className="text-center">Login</h1>
         <form className="align-center w-[90%] flex flex-col gap-4" onSubmit={onLogin}>
